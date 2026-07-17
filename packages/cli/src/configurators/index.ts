@@ -37,6 +37,7 @@ import { configureZcode, collectZcodeTemplates } from "./zcode.js";
 import { configureTrae } from "./trae.js";
 import { configureOmp, collectOmpTemplates } from "./omp.js";
 import { configureGrok, collectGrokTemplates } from "./grok.js";
+import { configureSnow, collectSnowTemplates } from "./snow.js";
 
 // Shared utilities
 import {
@@ -500,6 +501,10 @@ const PLATFORM_FUNCTIONS: Record<AITool, PlatformFunctions> = {
     configure: configureGrok,
     collectTemplates: () => collectGrokTemplates(),
   },
+  snow: {
+    configure: configureSnow,
+    collectTemplates: () => collectSnowTemplates(),
+  },
 };
 
 // =============================================================================
@@ -539,6 +544,15 @@ export function getConfiguredPlatforms(cwd: string): Set<AITool> {
   // so re-init / update recognize it (and `--migrate` can move it to `.devin/`).
   if (fs.existsSync(path.join(cwd, ".windsurf", "workflows"))) {
     platforms.add("devin");
+  }
+  // Snow CLI: configDir is `.snow/skills` so bare `.snow/settings.json` is not a
+  // false positive. Also accept `.snow/commands` or `.snow/agents` if present.
+  if (
+    !platforms.has("snow") &&
+    (fs.existsSync(path.join(cwd, ".snow", "commands")) ||
+      fs.existsSync(path.join(cwd, ".snow", "agents")))
+  ) {
+    platforms.add("snow");
   }
   return platforms;
 }
@@ -618,5 +632,7 @@ export function getInitToolChoices(): {
  * Resolve CLI flag name to AITool id (e.g., "claude" → "claude-code")
  */
 export function resolveCliFlag(flag: string): AITool | undefined {
+  // --snocli is an alias for --snow (Snow CLI)
+  if (flag === "snocli") return "snow";
   return PLATFORM_IDS.find((id) => AI_TOOLS[id].cliFlag === flag);
 }

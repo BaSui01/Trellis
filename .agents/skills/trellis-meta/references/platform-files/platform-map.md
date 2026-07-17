@@ -4,26 +4,27 @@ This page lists common Trellis file locations in a user project by platform. Whe
 
 ## Matrix
 
-| Platform | CLI flag | Main directory | Skill directory | Agent directory | Hooks/extensions |
-| --- | --- | --- | --- | --- | --- |
-| Claude Code | `--claude` | `.claude/` | `.claude/skills/` | `.claude/agents/` | `.claude/hooks/` + `.claude/settings.json` |
-| Cursor | `--cursor` | `.cursor/` | `.cursor/skills/` | `.cursor/agents/` | `.cursor/hooks.json` + `.cursor/hooks/` |
-| OpenCode | `--opencode` | `.opencode/` | `.opencode/skills/` | `.opencode/agents/` | `.opencode/plugins/` |
-| Codex | `--codex` | `.codex/` | `.agents/skills/` | `.codex/agents/` | `.codex/hooks/` + `.codex/hooks.json` |
-| Kilo | `--kilo` | `.kilocode/` | `.kilocode/skills/` | Usually none | `.kilocode/workflows/` |
-| Kiro | `--kiro` | `.kiro/` | `.kiro/skills/` | `.kiro/agents/` | `.kiro/hooks/` |
-| Gemini CLI | `--gemini` | `.gemini/` | `.agents/skills/` | `.gemini/agents/` | `.gemini/settings.json` + `.gemini/hooks/` |
-| Antigravity | `--antigravity` | `.agent/` | `.agent/skills/` | Usually none | `.agent/workflows/` |
-| Devin | `--devin` | `.devin/` | `.devin/skills/` | Usually none | `.devin/workflows/` |
-| Qoder | `--qoder` | `.qoder/` | `.qoder/skills/` | `.qoder/agents/` | `.qoder/hooks/` + `.qoder/settings.json` |
-| CodeBuddy | `--codebuddy` | `.codebuddy/` | `.codebuddy/skills/` | `.codebuddy/agents/` | `.codebuddy/hooks/` + `.codebuddy/settings.json` |
-| GitHub Copilot | `--copilot` | `.github/` | `.github/skills/` | `.github/agents/` | `.github/copilot/hooks/` + prompts |
-| Factory Droid | `--droid` | `.factory/` | `.factory/skills/` | `.factory/droids/` | `.factory/hooks/` + settings |
-| Pi Agent | `--pi` | `.pi/` | `.pi/skills/` | `.pi/agents/` | `.pi/extensions/trellis/` (native `trellis_subagent` tool) + `.pi/settings.json` |
-| Trae IDE | `--trae` | `.trae/` | `.trae/skills/` | `.trae/agents/` | `.trae/hooks/` + `.trae/hooks.json` |
-| Reasonix | `--reasonix` | `.reasonix/` | `.reasonix/skills/` | None — sub-agents are skills with `runAs: subagent` frontmatter | None |
-| ZCode | `--zcode` | `.zcode/` | `.zcode/skills/` | `.zcode/agents/` | `.zcode/hooks/` + `.zcode/config.json` (SessionStart + UserPromptSubmit + PreToolUse Agent/Task); sub-agents use hook-injected context |
-| Grok Build | `--grok` | `.grok/` | `.grok/skills/` | `.grok/agents/` | pull-based prelude (no hooks; flat `.grok/commands/trellis-*.md`) |
+| Platform          | CLI flag              | Main directory | Skill directory      | Agent directory                                                 | Hooks/extensions                                                                                                                                                       |
+| ----------------- | --------------------- | -------------- | -------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code       | `--claude`            | `.claude/`     | `.claude/skills/`    | `.claude/agents/`                                               | `.claude/hooks/` + `.claude/settings.json`                                                                                                                             |
+| Cursor            | `--cursor`            | `.cursor/`     | `.cursor/skills/`    | `.cursor/agents/`                                               | `.cursor/hooks.json` + `.cursor/hooks/`                                                                                                                                |
+| OpenCode          | `--opencode`          | `.opencode/`   | `.opencode/skills/`  | `.opencode/agents/`                                             | `.opencode/plugins/`                                                                                                                                                   |
+| Codex             | `--codex`             | `.codex/`      | `.agents/skills/`    | `.codex/agents/`                                                | `.codex/hooks/` + `.codex/hooks.json`                                                                                                                                  |
+| Kilo              | `--kilo`              | `.kilocode/`   | `.kilocode/skills/`  | Usually none                                                    | `.kilocode/workflows/`                                                                                                                                                 |
+| Kiro              | `--kiro`              | `.kiro/`       | `.kiro/skills/`      | `.kiro/agents/`                                                 | `.kiro/hooks/`                                                                                                                                                         |
+| Gemini CLI        | `--gemini`            | `.gemini/`     | `.agents/skills/`    | `.gemini/agents/`                                               | `.gemini/settings.json` + `.gemini/hooks/`                                                                                                                             |
+| Antigravity       | `--antigravity`       | `.agent/`      | `.agent/skills/`     | Usually none                                                    | `.agent/workflows/`                                                                                                                                                    |
+| Devin             | `--devin`             | `.devin/`      | `.devin/skills/`     | Usually none                                                    | `.devin/workflows/`                                                                                                                                                    |
+| Qoder             | `--qoder`             | `.qoder/`      | `.qoder/skills/`     | `.qoder/agents/`                                                | `.qoder/hooks/` + `.qoder/settings.json`                                                                                                                               |
+| CodeBuddy         | `--codebuddy`         | `.codebuddy/`  | `.codebuddy/skills/` | `.codebuddy/agents/`                                            | `.codebuddy/hooks/` + `.codebuddy/settings.json`                                                                                                                       |
+| GitHub Copilot    | `--copilot`           | `.github/`     | `.github/skills/`    | `.github/agents/`                                               | `.github/copilot/hooks/` + prompts                                                                                                                                     |
+| Factory Droid     | `--droid`             | `.factory/`    | `.factory/skills/`   | `.factory/droids/`                                              | `.factory/hooks/` + settings                                                                                                                                           |
+| Pi Agent          | `--pi`                | `.pi/`         | `.pi/skills/`        | `.pi/agents/`                                                   | `.pi/extensions/trellis/` (native `trellis_subagent` tool) + `.pi/settings.json`                                                                                       |
+| Trae IDE          | `--trae`              | `.trae/`       | `.trae/skills/`      | `.trae/agents/`                                                 | `.trae/hooks/` + `.trae/hooks.json`                                                                                                                                    |
+| Reasonix          | `--reasonix`          | `.reasonix/`   | `.reasonix/skills/`  | None — sub-agents are skills with `runAs: subagent` frontmatter | None                                                                                                                                                                   |
+| ZCode             | `--zcode`             | `.zcode/`      | `.zcode/skills/`     | `.zcode/agents/`                                                | `.zcode/hooks/` + `.zcode/config.json` (SessionStart + UserPromptSubmit + PreToolUse Agent/Task); sub-agents use hook-injected context                                 |
+| Grok Build        | `--grok`              | `.grok/`       | `.grok/skills/`      | `.grok/agents/`                                                 | pull-based prelude (no hooks; flat `.grok/commands/trellis-*.md`)                                                                                                      |
+| Snow CLI (snocli) | `--snow` / `--snocli` | `.snow/`       | `.snow/skills/`      | `.snow/agents/` (auto-discovered)                               | class-1 inject hooks: `.snow/hooks/` (`onSessionStart` / `onUserMessage` / `beforeSubAgentStart` + `additionalContext` JSON); commands `.snow/commands/trellis-*.json` |
 
 ## Capability Groups
 
@@ -46,6 +47,7 @@ These platforms usually have `trellis-research`, `trellis-implement`, and `trell
 - Reasonix (delivered as skills with `runAs: subagent` under `.reasonix/skills/`, not as a separate `agents/` directory)
 - ZCode
 - Grok Build (`.grok/agents/`; dispatch via `spawn_subagent` with `subagent_type`)
+- Snow CLI (snocli) (`.snow/agents/` auto-discovered; inject hooks + pull-based prelude; optional `.snow/sub-agents.trellis.json` for older Snow)
 
 When changing implementation/check/research behavior, look for the corresponding platform agent files first.
 

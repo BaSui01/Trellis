@@ -447,10 +447,7 @@ describe("configurePlatform", () => {
     }
 
     // IDE `.kiro.hook` written with PYTHON_CMD resolved and valid schema.
-    const ideHookPath = path.join(
-      hooksDir,
-      "trellis-workflow-state.kiro.hook",
-    );
+    const ideHookPath = path.join(hooksDir, "trellis-workflow-state.kiro.hook");
     expect(fs.existsSync(ideHookPath)).toBe(true);
     const ideRaw = fs.readFileSync(ideHookPath, "utf-8");
     expect(ideRaw).not.toContain("{{PYTHON_CMD}}");
@@ -668,7 +665,9 @@ describe("configurePlatform", () => {
       ),
     ).toBe(true);
     expect(
-      fs.existsSync(path.join(tmpDir, ".grok", "commands", "trellis", "start.md")),
+      fs.existsSync(
+        path.join(tmpDir, ".grok", "commands", "trellis", "start.md"),
+      ),
     ).toBe(false);
     expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(false);
 
@@ -712,6 +711,148 @@ describe("configurePlatform", () => {
     ).toBe(false);
     expect(templates?.has(".grok/agents/trellis-implement.md")).toBe(true);
     expect(templates?.has(".grok/agents/trellis-research.md")).toBe(true);
+  });
+
+  it("configurePlatform('snow') writes class-1 inject hooks, skills, commands, and agents", async () => {
+    await configurePlatform("snow", tmpDir);
+
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".snow", "skills", "trellis-check", "SKILL.md"),
+      ),
+    ).toBe(true);
+    // hasHooks=true → trellis-start is filtered out (session inject replaces it)
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".snow", "skills", "trellis-start", "SKILL.md"),
+      ),
+    ).toBe(false);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".snow", "commands", "trellis-start.json"),
+      ),
+    ).toBe(false);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".snow", "commands", "trellis-continue.json"),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".snow", "commands", "trellis-finish-work.json"),
+      ),
+    ).toBe(true);
+
+    const continueCmd = JSON.parse(
+      fs.readFileSync(
+        path.join(tmpDir, ".snow", "commands", "trellis-continue.json"),
+        "utf-8",
+      ),
+    ) as { type: string; command: string; location: string };
+    expect(continueCmd.type).toBe("prompt");
+    expect(continueCmd.location).toBe("project");
+    expect(continueCmd.command).toContain(".trellis");
+
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".snow", "agents", "trellis-implement.md"),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(tmpDir, ".snow", "agents", "trellis-check.md")),
+    ).toBe(true);
+    const researchAgentPath = path.join(
+      tmpDir,
+      ".snow",
+      "agents",
+      "trellis-research.md",
+    );
+    expect(fs.existsSync(researchAgentPath)).toBe(true);
+    expect(fs.readFileSync(researchAgentPath, "utf-8")).not.toContain(
+      "Load Trellis Context First",
+    );
+    expect(
+      fs.readFileSync(
+        path.join(tmpDir, ".snow", "agents", "trellis-implement.md"),
+        "utf-8",
+      ),
+    ).toContain("Load Trellis Context First");
+    expect(
+      fs.readFileSync(
+        path.join(tmpDir, ".snow", "agents", "trellis-implement.md"),
+        "utf-8",
+      ),
+    ).toContain("filesystem-read");
+    expect(
+      fs.readFileSync(
+        path.join(tmpDir, ".snow", "agents", "trellis-implement.md"),
+        "utf-8",
+      ),
+    ).toContain("beforeSubAgentStart");
+
+    // Bare .snow/settings.json must not alone count as configured
+    const emptyDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "trellis-snow-det-"),
+    );
+    try {
+      fs.mkdirSync(path.join(emptyDir, ".snow"), { recursive: true });
+      fs.writeFileSync(path.join(emptyDir, ".snow", "settings.json"), "{}");
+      expect(getConfiguredPlatforms(emptyDir).has("snow")).toBe(false);
+      fs.mkdirSync(path.join(emptyDir, ".snow", "skills"), { recursive: true });
+      expect(getConfiguredPlatforms(emptyDir).has("snow")).toBe(true);
+    } finally {
+      fs.rmSync(emptyDir, { recursive: true, force: true });
+    }
+
+    const templates = collectPlatformTemplates("snow");
+    expect(templates?.has(".snow/commands/trellis-start.json")).toBe(false);
+    expect(templates?.has(".snow/skills/trellis-start/SKILL.md")).toBe(false);
+    expect(templates?.has(".snow/commands/trellis-continue.json")).toBe(true);
+    expect(templates?.has(".snow/agents/trellis-implement.md")).toBe(true);
+    expect(templates?.has(".snow/agents/trellis-research.md")).toBe(true);
+    expect(templates?.has(".snow/sub-agents.trellis.json")).toBe(true);
+    expect(templates?.has(".snow/hooks/onSessionStart.json")).toBe(true);
+    expect(templates?.has(".snow/hooks/onUserMessage.json")).toBe(true);
+    expect(templates?.has(".snow/hooks/beforeSubAgentStart.json")).toBe(true);
+    expect(templates?.has(".snow/hooks/write-trellis-context.py")).toBe(true);
+    expect(templates?.has(".snow/SNOW.md")).toBe(true);
+
+    expect(
+      fs.existsSync(path.join(tmpDir, ".snow", "sub-agents.trellis.json")),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(tmpDir, ".snow", "hooks", "onSessionStart.json")),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".snow", "hooks", "beforeSubAgentStart.json"),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".snow", "hooks", "write-trellis-context.py"),
+      ),
+    ).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, ".snow", "SNOW.md"))).toBe(true);
+    expect(
+      fs.readFileSync(path.join(tmpDir, ".snow", "SNOW.md"), "utf-8"),
+    ).toContain("class-1");
+
+    const fragment = JSON.parse(
+      fs.readFileSync(
+        path.join(tmpDir, ".snow", "sub-agents.trellis.json"),
+        "utf-8",
+      ),
+    ) as { agents: Array<{ id: string; tools: string[] }> };
+    expect(fragment.agents.some((a) => a.id === "trellis-implement")).toBe(
+      true,
+    );
+    const implement = fragment.agents.find((a) => a.id === "trellis-implement");
+    expect(implement?.tools).toContain("filesystem-read");
+    expect(implement?.tools).toContain("terminal-execute");
+
+    expect(AI_TOOLS.snow.templateContext.hasHooks).toBe(true);
+    expect(AI_TOOLS.snow.hasPythonHooks).toBe(true);
   });
 
   it("configurePlatform('zcode') writes only .zcode-owned skills", async () => {
@@ -1051,9 +1192,9 @@ describe("configurePlatform", () => {
     for (const file of walk(tmpDir)) {
       expect(path.basename(file)).not.toBe("statusline.py");
       if (path.basename(file) === "settings.json") {
-        expect(
-          JSON.parse(fs.readFileSync(file, "utf-8")),
-        ).not.toHaveProperty("statusLine");
+        expect(JSON.parse(fs.readFileSync(file, "utf-8"))).not.toHaveProperty(
+          "statusLine",
+        );
       }
     }
   });

@@ -965,7 +965,9 @@ async function handleReinit(
       } catch (err) {
         console.warn(
           chalk.yellow(
-            `⚠ Joiner onboarding setup failed: ${err instanceof Error ? err.message : String(err)}`,
+            `⚠ Joiner onboarding setup failed: ${
+              err instanceof Error ? err.message : String(err)
+            }`,
           ),
         );
       }
@@ -1023,6 +1025,9 @@ interface InitOptions {
   trae?: boolean;
   omp?: boolean;
   grok?: boolean;
+  snow?: boolean;
+  /** Alias for `snow` — same platform (Snow CLI / snocli). */
+  snocli?: boolean;
   yes?: boolean;
   user?: string;
   force?: boolean;
@@ -1112,6 +1117,12 @@ export async function init(options: InitOptions): Promise<void> {
   if (options.windsurf) {
     options.devin = true;
     delete options.windsurf;
+  }
+
+  // Alias: --snocli → --snow (Snow CLI)
+  if (options.snocli) {
+    options.snow = true;
+    delete options.snocli;
   }
 
   const cwd = process.cwd();
@@ -1553,7 +1564,10 @@ export async function init(options: InitOptions): Promise<void> {
       // Custom registry: transient error (not a 404) — abort, don't misclassify
       console.log(
         chalk.red(
-          `   ${registryProbeError?.message ?? "Could not reach registry. Check your connection and try again."}`,
+          `   ${
+            registryProbeError?.message ??
+            "Could not reach registry. Check your connection and try again."
+          }`,
         ),
       );
       return;
@@ -1688,7 +1702,10 @@ export async function init(options: InitOptions): Promise<void> {
               // Transient error (not 404) — loop back, don't misclassify
               console.log(
                 chalk.yellow(
-                  `   ${customProbe.error?.message ?? "Could not reach registry. Try again or enter a different source."}`,
+                  `   ${
+                    customProbe.error?.message ??
+                    "Could not reach registry. Try again or enter a different source."
+                  }`,
                 ),
               );
               registry = undefined; // Reset so we don't fall through to direct download
@@ -1763,7 +1780,10 @@ export async function init(options: InitOptions): Promise<void> {
       // Transient error (not 404) — abort, don't misclassify as direct-download
       console.log(
         chalk.red(
-          `Error: ${probeResult.error?.message ?? "Could not reach registry. Check your connection and try again."}`,
+          `Error: ${
+            probeResult.error?.message ??
+            "Could not reach registry. Check your connection and try again."
+          }`,
         ),
       );
       return;
@@ -2040,7 +2060,9 @@ export async function init(options: InitOptions): Promise<void> {
       } catch (err) {
         console.warn(
           chalk.yellow(
-            `⚠ Joiner onboarding setup failed: ${err instanceof Error ? err.message : String(err)}`,
+            `⚠ Joiner onboarding setup failed: ${
+              err instanceof Error ? err.message : String(err)
+            }`,
           ),
         );
       }

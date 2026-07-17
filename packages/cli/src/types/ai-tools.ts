@@ -26,7 +26,8 @@ export type AITool =
   | "zcode"
   | "trae"
   | "omp"
-  | "grok";
+  | "grok"
+  | "snow";
 
 /**
  * Template directory categories
@@ -51,7 +52,8 @@ export type TemplateDir =
   | "zcode"
   | "trae"
   | "omp"
-  | "grok";
+  | "grok"
+  | "snow";
 
 /**
  * CLI flag names for platform selection (e.g., --claude, --cursor, --kilo, --kiro, --gemini, --antigravity)
@@ -76,7 +78,9 @@ export type CliFlag =
   | "zcode"
   | "trae"
   | "omp"
-  | "grok";
+  | "grok"
+  | "snow"
+  | "snocli";
 
 /**
  * Template context for placeholder resolution.
@@ -499,6 +503,47 @@ export const AI_TOOLS: Record<AITool, AIToolConfig> = {
       agentCapable: true,
       hasHooks: false,
       cliFlag: "grok",
+    },
+  },
+  /**
+   * Snow CLI (snocli) — class-1 platform (snow-cli #194+).
+   *
+   * Skills: `.snow/skills/` (Claude Code Skills compatible)
+   * Commands: `.snow/commands/trellis-*.json` (type: prompt)
+   * Agents: `.snow/agents/` (project discovery + pull-based prelude)
+   * Hooks: `.snow/hooks/` emit additionalContext JSON (session/user/sub-agent)
+   *
+   * hasHooks=true: SessionStart injects context → trellis-start is filtered out.
+   * hasPythonHooks=true: ships write-trellis-context.py under .snow/hooks/.
+   *
+   * CLI flags: `--snow` (canonical) and `--snocli` (alias, same platform).
+   * Detection uses configDir `.snow/skills` so bare `.snow/settings.json` is not
+   * a false-positive "configured" project.
+   */
+  snow: {
+    name: "Snow CLI (snocli)",
+    templateDirs: ["common", "snow"],
+    // Point detection at skills so bare `.snow/settings.json` projects
+    // (common local Snow usage) are not false-positive "configured".
+    // configureSnow still writes skills/commands/agents/hooks under .snow/.
+    configDir: ".snow/skills",
+    extraManagedPaths: [
+      ".snow/commands",
+      ".snow/agents",
+      ".snow/hooks",
+      ".snow/sub-agents.trellis.json",
+      ".snow/SNOW.md",
+    ],
+    cliFlag: "snow",
+    defaultChecked: false,
+    hasPythonHooks: true,
+    templateContext: {
+      cmdRefPrefix: "/trellis-",
+      executorAI: "Bash scripts or Agent calls",
+      userActionLabel: "Skills",
+      agentCapable: true,
+      hasHooks: true,
+      cliFlag: "snow",
     },
   },
 };
