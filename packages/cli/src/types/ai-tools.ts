@@ -553,7 +553,7 @@ export const AI_TOOLS: Record<AITool, AIToolConfig> = {
     },
   },
   /**
-   * Snow CLI (snocli) - class-1 platform (snow-cli #194+).
+   * Snow CLI (snocli) - class-1 platform.
    *
    * Skills: `.snow/skills/` (Claude Code Skills compatible)
    * Commands: `.snow/commands/trellis-*.json` (type: prompt)

@@ -3,9 +3,8 @@ name: trellis-implement
 id: trellis-implement
 description: |
   Code implementation expert for Trellis. Understands specs and requirements,
-  then implements features. No git commit allowed. On Snow CLI, register via
-  `.snow/sub-agents.trellis.json` (until snow-cli#194) or dispatch a general
-  sub-agent with this role; first prompt line must be Active task: <path>.
+  then implements features. No git commit allowed. On Snow CLI, auto-loaded from
+  `.snow/agents/`; first prompt line should be Active task: <path>.
 tools:
   - filesystem-read
   - filesystem-create

@@ -49,7 +49,7 @@ On Snow CLI, the main session launches this agent with a full-context prompt. Al
 Active task: <path from task.py current>
 ```
 
-Snow does not auto-inject SessionStart task context into sub-agents until snow-cli#194. Always pull context as required below. Optionally Read `.snow/log/trellis-context.txt`.
+`beforeSubAgentStart` injects Trellis task context into the sub-agent prompt. Still pull prd/design/implement as required below, and optionally Read `.snow/log/trellis-context.txt`.
 
 ## Context
 

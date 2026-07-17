@@ -25,7 +25,7 @@ This page lists common Trellis file locations in a user project by platform. Whe
 | ZCode | `--zcode` | `.zcode/` | `.zcode/skills/` | `.zcode/agents/` | `.zcode/hooks/` + `.zcode/config.json` (SessionStart + UserPromptSubmit + PreToolUse Agent/Task); sub-agents use hook-injected context |
 | Grok Build | `--grok` | `.grok/` | `.grok/skills/` | `.grok/agents/` | pull-based prelude (no hooks; flat `.grok/commands/trellis-*.md`) |
 | Kimi Code | `--kimi` | `.kimi-code/` | `.agents/skills/` (shared) + `.kimi-code/skills/` | None — agent prompts are skills under `.kimi-code/skills/` (built-in coder/explore/plan sub-agents only) | None (pull-based prelude; no project hooks/settings) |
-| Snow CLI (snocli) | `--snow` / `--snocli` | `.snow/` | `.snow/skills/` | `.snow/agents/` (auto-discovered) | class-1 inject hooks: `.snow/hooks/` (`onSessionStart` / `onUserMessage` / `beforeSubAgentStart` + `additionalContext` JSON); commands `.snow/commands/trellis-*.json` |
+| Snow CLI (snocli) | `--snow` / `--snocli` | `.snow/` | `.snow/skills/` | `.snow/agents/` (auto-discovered; primary path) | class-1: auto inject + project agents + `beforeSubAgentStart` (`.snow/hooks/` `session`/`user`/`subagent` modes -> `additionalContext` JSON); `.snow/sub-agents.trellis.json` optional legacy only; commands `.snow/commands/trellis-*.json` |
 
 ## Capability Groups
 

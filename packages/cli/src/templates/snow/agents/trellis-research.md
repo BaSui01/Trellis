@@ -46,7 +46,7 @@ On Snow CLI, the main session launches this agent with a full-context prompt. Pr
 Active task: <path from task.py current>
 ```
 
-Until snow-cli#194 project-agent discovery, merge `.snow/sub-agents.trellis.json` or use Explore / General Purpose with this role body.
+Project agent is auto-discovered from `.snow/agents/trellis-research.md`. Prefer `#trellis-research` / picker dispatch with Active task path in the prompt.
 
 ---
 
