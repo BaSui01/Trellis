@@ -506,7 +506,7 @@ export const AI_TOOLS: Record<AITool, AIToolConfig> = {
     },
   },
   /**
-   * Snow CLI (snocli) — class-1 platform (snow-cli #194+).
+   * Snow CLI (snocli) — class-1 platform.
    *
    * Skills: `.snow/skills/` (Claude Code Skills compatible)
    * Commands: `.snow/commands/trellis-*.json` (type: prompt)
@@ -515,6 +515,7 @@ export const AI_TOOLS: Record<AITool, AIToolConfig> = {
    *
    * hasHooks=true: SessionStart injects context → trellis-start is filtered out.
    * hasPythonHooks=true: ships write-trellis-context.py under .snow/hooks/.
+   * sub-agents.trellis.json is optional legacy only.
    *
    * CLI flags: `--snow` (canonical) and `--snocli` (alias, same platform).
    * Detection uses configDir `.snow/skills` so bare `.snow/settings.json` is not

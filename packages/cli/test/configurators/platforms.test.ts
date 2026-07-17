@@ -817,6 +817,50 @@ describe("configurePlatform", () => {
     expect(templates?.has(".snow/hooks/write-trellis-context.py")).toBe(true);
     expect(templates?.has(".snow/SNOW.md")).toBe(true);
 
+    const sessionHook = fs.readFileSync(
+      path.join(tmpDir, ".snow", "hooks", "onSessionStart.json"),
+      "utf-8",
+    );
+    const userHook = fs.readFileSync(
+      path.join(tmpDir, ".snow", "hooks", "onUserMessage.json"),
+      "utf-8",
+    );
+    const subHook = fs.readFileSync(
+      path.join(tmpDir, ".snow", "hooks", "beforeSubAgentStart.json"),
+      "utf-8",
+    );
+    expect(sessionHook).toContain("write-trellis-context.py session");
+    expect(userHook).toContain("write-trellis-context.py user");
+    expect(subHook).toContain("write-trellis-context.py subagent");
+
+    const hookPy = fs.readFileSync(
+      path.join(tmpDir, ".snow", "hooks", "write-trellis-context.py"),
+      "utf-8",
+    );
+    expect(hookPy).toContain("TRELLIS_SNOW_HOOK_MODE");
+    expect(hookPy).toContain("agentKind");
+    expect(hookPy).toContain("implement.jsonl");
+    expect(hookPy).toContain("COMPACT_MAX_BYTES");
+    expect(hookPy).toContain("SNOW_CWD");
+    expect(hookPy).toContain("sessionId");
+
+    const snowGuide = fs.readFileSync(
+      path.join(tmpDir, ".snow", "SNOW.md"),
+      "utf-8",
+    );
+    expect(snowGuide).toContain("optional legacy only");
+    expect(snowGuide.toLowerCase()).not.toContain("until snow-cli#194");
+    expect(snowGuide).toContain("Session identity");
+    expect(snowGuide).toContain("SNOW_SESSION_ID");
+    expect(snowGuide).toContain("TRELLIS_CONTEXT_ID");
+
+    const implementAgent = fs.readFileSync(
+      path.join(tmpDir, ".snow", "agents", "trellis-implement.md"),
+      "utf-8",
+    );
+    expect(implementAgent.toLowerCase()).not.toContain("until snow-cli#194");
+    expect(implementAgent).toContain("auto-loaded from");
+
     expect(
       fs.existsSync(path.join(tmpDir, ".snow", "sub-agents.trellis.json")),
     ).toBe(true);
@@ -843,7 +887,11 @@ describe("configurePlatform", () => {
         path.join(tmpDir, ".snow", "sub-agents.trellis.json"),
         "utf-8",
       ),
-    ) as { agents: Array<{ id: string; tools: string[] }> };
+    ) as {
+      agents: Array<{ id: string; tools: string[] }>;
+      _comment?: string;
+    };
+    expect(fragment._comment ?? "").toMatch(/LEGACY ONLY/i);
     expect(fragment.agents.some((a) => a.id === "trellis-implement")).toBe(
       true,
     );

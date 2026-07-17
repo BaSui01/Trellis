@@ -46,6 +46,7 @@ _KNOWN_PLATFORMS = {
     "trae",
     "grok",
     "zcode",
+    "snow",
 }
 
 _ENV_SESSION_KEYS: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -66,6 +67,9 @@ _ENV_SESSION_KEYS: tuple[tuple[str, tuple[str, ...]], ...] = (
     # only fires when the resolver already detected "zcode" — no collision with
     # the claude entry above.
     ("zcode", ("CLAUDE_SESSION_ID",)),
+    # Snow CLI exports SNOW_SESSION_ID into hook/terminal/sub-agent children.
+    # TRELLIS_CONTEXT_ID remains the preferred override when present.
+    ("snow", ("SNOW_SESSION_ID",)),
 )
 _ENV_CONVERSATION_KEYS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("cursor", ("CURSOR_CONVERSATION_ID", "CURSOR_CONVERSATIONID")),
@@ -84,6 +88,8 @@ _ENV_PLATFORM_ALIASES = {
     "factory": "droid",
     "factory-ai": "droid",
     "github-copilot": "copilot",
+    "snocli": "snow",
+    "snow-cli": "snow",
 }
 # ZCode intentionally reuses CLAUDE_SESSION_ID. Hooks know the host is ZCode,
 # while later shell commands see only the shared env name and resolve it through

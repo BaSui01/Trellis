@@ -1,15 +1,15 @@
 /**
  * Snow CLI (snocli) configurator.
  *
- * Snow CLI is a class-1 platform (agentCapable + context-injecting hooks) when
- * running snow-cli with #194 support.
+ * Snow CLI is a class-1 platform (agentCapable + auto context inject +
+ * project agent discovery + beforeSubAgentStart).
  *
  * Output paths:
  * - `.snow/skills/` — workflow + bundled skills (Claude Code Skills layout)
  * - `.snow/commands/trellis-*.json` — custom prompt slash commands (no trellis-start)
  * - `.snow/agents/` — project sub-agents (auto-discovered by Snow)
  * - `.snow/hooks/` — inject hooks (session / user / beforeSubAgentStart)
- * - `.snow/sub-agents.trellis.json` — optional import fragment for older Snow
+ * - `.snow/sub-agents.trellis.json` — optional legacy fragment only
  * - `.snow/SNOW.md` — operator guide
  *
  * hasHooks=true → filterCommands drops `start`; SessionStart injects context.
@@ -186,7 +186,7 @@ function agentToSnowExport(agent: AgentContent): SnowSubAgentExport {
 function buildSubAgentsFragment(agents: readonly AgentContent[]): string {
   const payload = {
     _comment:
-      "Optional Trellis export for older Snow builds without project-agent discovery. Modern snow-cli loads .snow/agents/*.md automatically — merge only if needed.",
+      "OPTIONAL LEGACY ONLY. Modern Snow auto-loads .snow/agents/*.md — do not merge this unless you are on an older Snow without project-agent discovery.",
     _docs: "See .snow/SNOW.md",
     agents: agents.map(agentToSnowExport),
   };
