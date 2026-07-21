@@ -37,7 +37,7 @@ Active task: .trellis/tasks/<id>
 Snow loads project agents from `.snow/agents/**/*.md` (priority over `~/.snow/sub-agents.json`).
 Primary path: project agent discovery — no manual merge required. Do not use legacy sub-agent JSON merge files.
 
-Context loading is class-1 hook inject (`beforeSubAgentStart` / session / user). Agents are **not** shipped with class-2 pull-based prelude text.
+Context loading is class-1 hook inject (`beforeSubAgentStart` / session / user). Agents are **not** shipped with class-2 pull-based prelude text. Hooks already inject context; agents still re-read task artifacts for correctness.
 
 ## Tool names (Snow-native)
 

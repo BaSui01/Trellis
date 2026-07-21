@@ -40,13 +40,18 @@ Conversations get compacted; files don't. Every research output MUST end up as a
 
 ## Dispatch note (main session)
 
-On Snow CLI, the main session launches this agent with a full-context prompt. Prefer starting the prompt with:
+On Snow CLI (class-1), project agents under `.snow/agents/` are auto-discovered. Prefer starting the prompt with:
 
 ```text
 Active task: <path from task.py current>
 ```
 
-Project agent is auto-discovered from `.snow/agents/trellis-research.md`. Prefer `#trellis-research` / picker dispatch with Active task path in the prompt.
+- Session/user hooks inject Trellis context into the main session.
+- `beforeSubAgentStart` injects Trellis breadcrumb into this sub-agent prompt.
+- Still re-read the Active task path and write under `{TASK_DIR}/research/` (hook inject is a breadcrumb, not a substitute for task resolution).
+- Optionally Read `.snow/log/trellis-context.txt` if present.
+
+Prefer `#trellis-research` / picker dispatch with Active task path in the prompt.
 
 ---
 

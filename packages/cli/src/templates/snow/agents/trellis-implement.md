@@ -52,15 +52,17 @@ You are already the `trellis-implement` sub-agent that the main session dispatch
 
 ## Dispatch note (main session)
 
-On Snow CLI, project agents under `.snow/agents/` are auto-discovered. Prefer starting the prompt with:
+On Snow CLI (class-1), project agents under `.snow/agents/` are auto-discovered. Prefer starting the prompt with:
 
 ```text
 Active task: <path from task.py current>
 ```
 
-- `beforeSubAgentStart` injects Trellis breadcrumb into the sub-agent prompt.
-- Main session also receives session/user injects (class-1 hook path; no class-2 pull prelude).
+- Session/user hooks inject Trellis context into the main session.
+- `beforeSubAgentStart` injects Trellis breadcrumb into this sub-agent prompt.
+- Still re-read task artifacts below (hook inject is a breadcrumb, not a substitute for prd/design/implement).
 - Optionally Read `.snow/log/trellis-context.txt` if present.
+- Main session also receives session/user injects (class-1 hook path; no class-2 pull prelude).
 
 ## Context
 
@@ -70,7 +72,8 @@ Before implementing, read:
 - `.trellis/spec/` - Development guidelines
 - Task `prd.md` - Requirements document
 - Task `design.md` / `implement.md` if present
-- `.snow/log/trellis-context.txt` if present (breadcrumb from side-effect hooks)
+- `implement.jsonl` when curated (skip `_example` seed rows)
+- `.snow/log/trellis-context.txt` if present (breadcrumb from inject hooks)
 
 ## Core Responsibilities
 
