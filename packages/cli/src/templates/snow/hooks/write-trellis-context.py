@@ -73,7 +73,9 @@ def _run(cmd: list[str], cwd: Path) -> str:
             text=True,
             encoding="utf-8",
             errors="replace",
-            timeout=15,
+            # Keep below Snow user/subagent hook timeout (15s) so fail-open JSON
+            # can still emit if task.py stalls.
+            timeout=5,
             check=False,
         )
     except Exception as exc:  # noqa: BLE001 — hooks must never crash the host
@@ -351,7 +353,63 @@ def _task_artifact_summary(task_dir: Path, *, detailed: bool, kind: str) -> list
     return lines
 
 
-def _workflow_phase_summary(repo: Path) -> list[str]:
+def _sanitize_session_key(value: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", (value or "").strip())
+    return cleaned.strip("._-")
+
+
+def _current_session_ids(stdin_ctx: dict[str, Any] | None = None) -> list[str]:
+    # Prefer explicit Trellis context, then Snow session identity.
+    ids: list[str] = []
+    candidates = [
+        os.environ.get("TRELLIS_CONTEXT_ID"),
+        os.environ.get("SNOW_SESSION_ID"),
+    ]
+    if stdin_ctx:
+        candidates.extend(
+            [
+                stdin_ctx.get("sessionId"),
+                stdin_ctx.get("session_id"),
+            ]
+        )
+    for raw in candidates:
+        if not isinstance(raw, str):
+            continue
+        key = _sanitize_session_key(raw)
+        if key and key not in ids:
+            ids.append(key)
+        # Snow injects TRELLIS_CONTEXT_ID=snow-<sessionId>
+        if key.startswith("snow_"):
+            bare = key[5:]
+            if bare and bare not in ids:
+                ids.append(bare)
+        if key.startswith("snow-"):
+            bare = key[5:]
+            if bare and bare not in ids:
+                ids.append(bare)
+    return ids
+
+
+def _resolve_runtime_session_file(
+    repo: Path,
+    stdin_ctx: dict[str, Any] | None = None,
+) -> Path | None:
+    # Resolve only the current session runtime file; never pick by mtime.
+    sessions_dir = repo / ".trellis" / ".runtime" / "sessions"
+    if not sessions_dir.is_dir():
+        return None
+    for sid in _current_session_ids(stdin_ctx):
+        for name in (f"{sid}.json", sid):
+            candidate = sessions_dir / name
+            if candidate.is_file():
+                return candidate
+    return None
+
+
+def _workflow_phase_summary(
+    repo: Path,
+    stdin_ctx: dict[str, Any] | None = None,
+) -> list[str]:
     lines: list[str] = []
     workflow = repo / ".trellis" / "workflow.md"
     if workflow.is_file():
@@ -359,34 +417,24 @@ def _workflow_phase_summary(repo: Path) -> list[str]:
         if body:
             lines.extend(["## workflow.md excerpt", body, ""])
 
-    # Prefer classic path; fall back to runtime session files if present.
+    # Prefer classic path; fall back only to the *current* runtime session file.
     session_md = repo / ".trellis" / "session" / "current.md"
     if session_md.is_file():
         body = _read_text(session_md, 1200)
         if body:
             lines.extend(["## .trellis/session/current.md", body, ""])
     else:
-        sessions_dir = repo / ".trellis" / ".runtime" / "sessions"
-        if sessions_dir.is_dir():
-            try:
-                sessions = sorted(
-                    sessions_dir.glob("*.json"),
-                    key=lambda p: p.stat().st_mtime,
-                    reverse=True,
+        current_session = _resolve_runtime_session_file(repo, stdin_ctx)
+        if current_session is not None:
+            body = _read_text(current_session, 900)
+            if body:
+                lines.extend(
+                    [
+                        f"## runtime session ({current_session.name})",
+                        body,
+                        "",
+                    ]
                 )
-            except Exception:
-                sessions = []
-            if sessions:
-                latest = sessions[0]
-                body = _read_text(latest, 900)
-                if body:
-                    lines.extend(
-                        [
-                            f"## runtime session ({latest.name})",
-                            body,
-                            "",
-                        ]
-                    )
     return lines
 
 
@@ -449,7 +497,7 @@ def build_context(
         lines.append("")
 
     if not compact:
-        lines.extend(_workflow_phase_summary(repo))
+        lines.extend(_workflow_phase_summary(repo, stdin_ctx))
 
         identity = repo / ".trellis" / "identity.md"
         if identity.is_file():
@@ -520,9 +568,12 @@ def build_context(
 
 
 def _truncate(text: str, max_bytes: int) -> str:
-    if len(text) <= max_bytes:
+    encoded = text.encode("utf-8")
+    if len(encoded) <= max_bytes:
         return text
-    return text[: max_bytes - 20] + "\n... (truncated)\n"
+    suffix = "\n... (truncated)\n"
+    budget = max(0, max_bytes - len(suffix.encode("utf-8")))
+    return encoded[:budget].decode("utf-8", errors="ignore") + suffix
 
 
 def main() -> int:
@@ -539,10 +590,15 @@ def main() -> int:
         log_dir = repo / ".snow" / "log"
         try:
             log_dir.mkdir(parents=True, exist_ok=True)
-            # Always mirror the richest practical breadcrumb for pull-based reads.
-            # For user mode, still write the compact inject, but also keep a full
-            # snapshot when cheap (session/subagent already full).
-            (log_dir / "trellis-context.txt").write_text(context, encoding="utf-8")
+            # Keep trellis-context.txt as the richest practical breadcrumb for
+            # pull-based reads. User-mode inject stays compact, but must not
+            # clobber a prior full snapshot.
+            log_path = log_dir / "trellis-context.txt"
+            if mode == "user":
+                full_context = build_context(repo, mode="session", stdin_ctx=stdin_ctx)
+                log_path.write_text(full_context, encoding="utf-8")
+            else:
+                log_path.write_text(context, encoding="utf-8")
         except Exception as exc:  # noqa: BLE001
             sys.stderr.write(f"trellis-context write failed: {exc}\n")
 

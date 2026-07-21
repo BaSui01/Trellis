@@ -43,13 +43,16 @@ You are already the `trellis-check` sub-agent that the main session dispatched. 
 
 ## Dispatch note (main session)
 
-On Snow CLI, the main session launches this agent with a full-context prompt. Always start the prompt with:
+On Snow CLI (class-1), the main session launches this agent with a full-context prompt. Always start the prompt with:
 
 ```text
 Active task: <path from task.py current>
 ```
 
-`beforeSubAgentStart` injects Trellis task context into the sub-agent prompt. Still pull prd/design/implement as required below, and optionally Read `.snow/log/trellis-context.txt`.
+- Session/user hooks inject Trellis context into the main session.
+- `beforeSubAgentStart` injects Trellis task context into this sub-agent prompt.
+- Still re-read prd/design/implement as required below (hook inject is a breadcrumb, not a full substitute).
+- Optionally Read `.snow/log/trellis-context.txt`.
 
 ## Context
 
@@ -58,6 +61,7 @@ Before checking, read:
 - `.trellis/spec/` - Development guidelines
 - Pre-commit checklist for quality standards
 - Task `prd.md` / `design.md` / `implement.md` if present
+- `check.jsonl` when curated (skip `_example` seed rows)
 - `.snow/log/trellis-context.txt` if present
 
 ## Core Responsibilities

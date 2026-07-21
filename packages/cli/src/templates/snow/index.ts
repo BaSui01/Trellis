@@ -12,8 +12,9 @@
  * context, so trellis-start is filtered out of skills/commands (optional
  * recovery still documented in SNOW.md).
  *
- * trellis-implement / trellis-check use pull-based prelude as defense-in-depth.
- * trellis-research is standalone (no implement/check prelude).
+ * Class-1: do NOT inject the class-2 "does NOT auto-inject" pull-based prelude.
+ * Hook inject (session/user/beforeSubAgentStart) is the primary context path.
+ * trellis-research remains standalone (no implement/check-specific prelude).
  */
 
 import {
