@@ -322,27 +322,12 @@ describe("configurePlatform", () => {
       const agentPath = path.join(codexAgentsRoot, `${agent.name}.toml`);
       expect(fs.existsSync(agentPath)).toBe(true);
       const written = fs.readFileSync(agentPath, "utf-8");
-      // Codex is a class-2 (pull-based) platform. Prelude is injected into
-      // implement/check only — research is orthogonal (searches spec tree,
-      // no task dependency) and must stay pristine.
-      const needsPrelude = ["trellis-implement", "trellis-check"].includes(
-        agent.name,
-      );
-      if (needsPrelude) {
-        expect(written).toContain("Required: Load Trellis Context First");
-        expect(written).toContain("task.py current --source");
-        // Original body must still be present (prepend, not replace)
-        const originalBody = agent.content
-          .split("developer_instructions")[1]
-          ?.split('"""')[1]
-          ?.trim()
-          .split("\n")[0];
-        if (originalBody) {
-          expect(written).toContain(originalBody);
-        }
-      } else {
-        expect(written).toBe(replacePythonCommandLiterals(agent.content));
-      }
+      // Native SubagentStart injects context, while every profile retains a
+      // marker-gated active-task pull fallback when the hook is unavailable.
+      expect(written).toBe(replacePythonCommandLiterals(agent.content));
+      expect(written).toContain("<!-- trellis-hook-injected -->");
+      expect(written).toContain("Active task: <path>");
+      expect(written).not.toContain("Required: Load Trellis Context First");
     }
 
     const config = getCodexConfigTemplate();
@@ -363,6 +348,9 @@ describe("configurePlatform", () => {
       process.platform === "win32" ? "python" : "python3";
     expect(content).toContain(
       `"command": "${expectedPythonCmd} -X utf8 .codex/hooks/inject-workflow-state.py"`,
+    );
+    expect(content).toContain(
+      `"command": "${expectedPythonCmd} -X utf8 .codex/hooks/inject-subagent-context.py"`,
     );
     expect(content).not.toContain("{{PYTHON_CMD}}");
   });
@@ -1311,19 +1299,22 @@ describe("configurePlatform", () => {
     expect(
       fs.existsSync(path.join(tmpDir, ".pi", "prompts", "trellis-start.md")),
     ).toBe(true);
+    // Shared skills go to `.agents/skills/`, deduped with Codex/Gemini (#447) —
+    // Pi no longer keeps a private `.pi/skills/` copy.
     expect(
       fs.existsSync(
-        path.join(tmpDir, ".pi", "skills", "trellis-check", "SKILL.md"),
+        path.join(tmpDir, ".agents", "skills", "trellis-check", "SKILL.md"),
       ),
     ).toBe(true);
     expect(
-      fs.existsSync(path.join(tmpDir, ".pi", "skills", BUNDLED_REFERENCE)),
+      fs.existsSync(path.join(tmpDir, ".agents", "skills", BUNDLED_REFERENCE)),
     ).toBe(true);
     expect(
       fs.existsSync(
-        path.join(tmpDir, ".pi", "skills", SPEC_BOOTSTRAP_REFERENCE),
+        path.join(tmpDir, ".agents", "skills", SPEC_BOOTSTRAP_REFERENCE),
       ),
     ).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, ".pi", "skills"))).toBe(false);
     expect(
       fs.existsSync(path.join(tmpDir, ".pi", "agents", "trellis-implement.md")),
     ).toBe(true);
@@ -1386,7 +1377,9 @@ describe("configurePlatform", () => {
           }
       )[];
     };
-    expect(settings.skills).toEqual(["./skills"]);
+    // No private `.pi/skills/` root anymore — Pi discovers shared
+    // `.agents/skills/` natively (#447).
+    expect(settings.skills).toBeUndefined();
   });
 
   it("configurePlatform('pi') writes tracked templates exactly", async () => {
@@ -1423,15 +1416,17 @@ describe("configurePlatform", () => {
     expect(templates?.get(".pi/prompts/trellis-start.md")).toBeDefined();
     expect(templates?.get(".pi/prompts/trellis-finish-work.md")).toBeDefined();
     expect(templates?.get(".pi/prompts/trellis-continue.md")).toBeDefined();
-    expect(templates?.get(".pi/skills/trellis-check/SKILL.md")).toBeDefined();
+    expect(
+      templates?.get(".agents/skills/trellis-check/SKILL.md"),
+    ).toBeDefined();
     expect(
       templates?.get(
-        ".pi/skills/trellis-meta/references/local-architecture/overview.md",
+        ".agents/skills/trellis-meta/references/local-architecture/overview.md",
       ),
     ).toBeDefined();
     expect(
       templates?.get(
-        ".pi/skills/trellis-spec-bootstrap/references/spec-writing.md",
+        ".agents/skills/trellis-spec-bootstrap/references/spec-writing.md",
       ),
     ).toBeDefined();
     expect(templates?.get(".pi/agents/trellis-implement.md")).toContain(
@@ -1486,6 +1481,12 @@ describe("configurePlatform", () => {
     const rawTemplate = getCodexHooksConfig();
     expect(rawTemplate).toContain(
       "{{PYTHON_CMD}} -X utf8 .codex/hooks/inject-workflow-state.py",
+    );
+    expect(rawTemplate).toContain(
+      "{{PYTHON_CMD}} -X utf8 .codex/hooks/inject-subagent-context.py",
+    );
+    expect(rawTemplate).toContain(
+      '"matcher": "^(?:trellis-implement|trellis-check|trellis-research)$"',
     );
   });
 
